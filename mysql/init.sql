@@ -1,5 +1,4 @@
 CREATE DATABASE IF NOT EXISTS sampledb;
-
 USE sampledb;
 
 CREATE TABLE users (
@@ -7,5 +6,4 @@ CREATE TABLE users (
     name VARCHAR(50)
 );
 
-INSERT INTO users(name) VALUES ('Docker User'), ('Java Dev');
-
+INSERT INTO users(name) VALUES ('Docker User'), ('Jakarta EE');
