@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         DOCKERHUB_CREDENTIALS = credentials('gayas555')
-        IMAGE_NAME = "mohdgayas/my_app"
+        IMAGE_NAME = "gayas555/my_app"
         CONTAINER_NAME = "my_app"
     }
 
