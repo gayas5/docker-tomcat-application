@@ -3,65 +3,45 @@ pipeline {
 
     environment {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-creds')
-        IMAGE_NAME = "mohdparvez23/tomcat_app"
-        CONTAINER_NAME = "tomcat-app"
+        IMAGE_NAME = "mohd666/my_app"
+        CONTAINER_NAME = "my_app"
     }
 
     stages {
 
-        stage('Checkout Source') {
+        stage('Build docker image') {
             steps {
-                checkout scm
-            }
-        }
-
-        stage('Build Docker Image') {
-            steps {
-                sh '''
-                  docker build \
-                    -t ${IMAGE_NAME}:${BUILD_NUMBER} \
-                    -f tomcat/Dockerfile .
-                '''
+                sh 'sudo docker build -t $IMAGE_NAME:$BUILD_NUMBER .'
             }
         }
 
         stage('Login to Docker Hub') {
             steps {
                 sh '''
-                  echo ${DOCKERHUB_CREDENTIALS_PSW} | \
-                  docker login -u ${DOCKERHUB_CREDENTIALS_USR} --password-stdin
+                  echo $DOCKERHUB_CREDENTIALS_PSW | \
+                  sudo docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin
                 '''
             }
         }
 
-        stage('Push Docker Image') {
+        stage('Push image') {
+            steps {
+                sh 'sudo docker push $IMAGE_NAME:$BUILD_NUMBER'
+            }
+        }
+
+        stage('Run container') {
             steps {
                 sh '''
-                  docker push ${IMAGE_NAME}:${BUILD_NUMBER}
-                  docker tag ${IMAGE_NAME}:${BUILD_NUMBER} ${IMAGE_NAME}:latest
-                  docker push ${IMAGE_NAME}:latest
+                  sudo docker stop $CONTAINER_NAME || true
+                  sudo docker rm $CONTAINER_NAME || true
+
+                  sudo docker run -d \
+                    --name $CONTAINER_NAME \
+                    -p 8081:8080 \
+                    $IMAGE_NAME:$BUILD_NUMBER
                 '''
             }
-        }
-
-        stage('Run Container') {
-            steps {
-                sh '''
-                  docker stop ${CONTAINER_NAME} || true
-                  docker rm ${CONTAINER_NAME} || true
-
-                  docker run -d \
-                    --name ${CONTAINER_NAME} \
-                    -p 8082:8080 \
-                    ${IMAGE_NAME}:${BUILD_NUMBER}
-                '''
-            }
-        }
-    }
-
-    post {
-        always {
-            sh 'docker logout || true'
         }
     }
 }
